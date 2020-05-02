@@ -101,8 +101,8 @@ Shader "Unity Shaders Book/Chapter 14/Toon Shading" {
                 
                 o.pos = UnityObjectToClipPos( v.vertex);
                 o.uv = TRANSFORM_TEX (v.texcoord, _MainTex);
-                o.worldNormal  = UnityObjectToWorldNormal(v.normal);
-                o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                o.worldNormal  = UnityObjectToWorldNormal(v.normal); //世界空间法线
+                o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz; //世界空间顶点坐标
                 
                 TRANSFER_SHADOW(o);
                 
@@ -127,10 +127,12 @@ Shader "Unity Shaders Book/Chapter 14/Toon Shading" {
                 
                 fixed3 diffuse = _LightColor0.rgb * albedo * tex2D(_Ramp, float2(diff, diff)).rgb;
                 
-                fixed spec = dot(worldNormal, worldHalfDir);
-                fixed w = fwidth(spec) * 2.0;
+                fixed spec = dot(worldNormal, worldHalfDir); //法线和半程向量的点乘
+                fixed w = fwidth(spec) * 2.0;   //fwidth(spec)：spec这个值在当前像素和它的下一个相邻像素之间的差值（X和Y方向偏导数的绝对值的和）
                 fixed3 specular = _Specular.rgb * lerp(0, 1, smoothstep(-w, w, spec + _SpecularScale - 1)) * step(0.0001, _SpecularScale);
-                
+                // smoothstep(a,b,x) : x<a，返回 0；x>b，返回 1。 a<x<b，返回0～1的平滑插值（在高光区域边缘处实现抗锯齿）
+                // step(a, x) : 如果 x<a，返回 0；否则，返回 1。（为了在_SpecularScale=0时，完全消除高光反射的光照）
+
                 return fixed4(ambient + diffuse + specular, 1.0);
             }
         
