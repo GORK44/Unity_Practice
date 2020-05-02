@@ -5,8 +5,8 @@ Shader "Unity Shaders Book/Chapter 14/Toon Shading" {
     Properties {
         _Color ("Color Tint", Color) = (1, 1, 1, 1)
         _MainTex ("Main Tex", 2D) = "white" {}
-        _Ramp ("Ramp Texture", 2D) = "white" {}
-        _Outline ("Outline", Range(0, 1)) = 0.1
+        _Ramp ("Ramp Texture", 2D) = "white" {} //控制漫反射色调的渐变纹理
+        _Outline ("Outline", Range(0, 1)) = 0.1 //轮廓线宽度
         _OutlineColor ("Outline Color", Color) = (0, 0, 0, 1)
         _Specular ("Specular", Color) = (1, 1, 1, 1)
         _SpecularScale ("Specular Scale", Range(0, 0.1)) = 0.01
@@ -17,7 +17,7 @@ Shader "Unity Shaders Book/Chapter 14/Toon Shading" {
         Pass {
             NAME "OUTLINE"
             
-            Cull Front
+            Cull Front //第一个Pass只渲染背面的三角形面片
             
             CGPROGRAM
             
@@ -41,11 +41,11 @@ Shader "Unity Shaders Book/Chapter 14/Toon Shading" {
             v2f vert (a2v v) {
                 v2f o;
                 
-                float4 pos = mul(UNITY_MATRIX_MV, v.vertex); 
-                float3 normal = mul((float3x3)UNITY_MATRIX_IT_MV, v.normal);  
-                normal.z = -0.5;
-                pos = pos + float4(normalize(normal), 0) * _Outline;
-                o.pos = mul(UNITY_MATRIX_P, pos);
+                float4 pos = mul(UNITY_MATRIX_MV, v.vertex); //相机空间坐标
+                float3 normal = mul((float3x3)UNITY_MATRIX_IT_MV, v.normal); //逆转置矩阵，得到相机空间法线 
+                normal.z = -0.5; //尽可能避免内凹模型背面扩张后顶点挡住正面的面片
+                pos = pos + float4(normalize(normal), 0) * _Outline; //相机空间顶点沿着法线方向扩展
+                o.pos = mul(UNITY_MATRIX_P, pos); //顶点到裁剪空间
                 
                 return o;
             }
